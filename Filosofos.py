@@ -20,6 +20,7 @@ class Filosofo(threading.Thread):
         self.tenedor_izq = tenedor_izq
         self.tenedor_der = tenedor_der
         self.plato = plato
+        self.terminado = False
 
     def pensar(self):
         print(f"{self.nombre} está pensando")
@@ -31,13 +32,15 @@ class Filosofo(threading.Thread):
         tenedor_der_disp = self.tenedor_der.lock.acquire(blocking=False)
         if tenedor_izq_disp and tenedor_der_disp:
             print(f"{self.nombre} ha tomado los tenedores")
-            while self.plato > 0:
-                self.plato -= 1
+            for i in range(self.plato):
                 print(f"{self.nombre} comió un bocado")
+                print(f"{self.nombre} le quedan {self.plato - i - 1} porciones")
                 time.sleep(random.randint(1, 3))
             self.tenedor_der.liberar()
             self.tenedor_izq.liberar()
+            self.terminado = True
             print(f"{self.nombre} ha terminado de comer")
+
         else:
             if tenedor_izq_disp:
                 self.tenedor_izq.liberar()
@@ -46,16 +49,21 @@ class Filosofo(threading.Thread):
             print(f"{self.nombre} no puede comer")
 
     def run(self):
-        while True:
+        while not self.terminado:
             self.pensar()
-            self.comer()
+            if self.plato > 0:
+                self.comer()
+            else:
+                self.terminado = True
+
 
 if __name__ == "__main__":
     n = int(input("Ingrese la cantidad de filósofos: "))
+    plato = int(input("Ingrese la cantidad de porciones: "))
     tenedores = [Tenedor() for i in range(n)]
     filosofos = []
     for i in range(n):
-        plato = random.randint(1, 10)
+        #plato = random.randint(1, 10)
         filosofo = Filosofo(f"Filósofo {i+1}", tenedores[i], tenedores[(i+1)%n], plato)
         filosofos.append(filosofo)
     for filosofo in filosofos:
