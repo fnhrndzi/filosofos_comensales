@@ -25,7 +25,7 @@ class Filosofo(threading.Thread):
     def pensar(self):
         print(f"{self.nombre} está pensando")
         time.sleep(random.randint(1, 5))
-
+    
     def comer(self):
         print(f"{self.nombre} está tratando de comer")
         tenedor_izq_disp = self.tenedor_izq.lock.acquire(blocking=False)
@@ -37,15 +37,19 @@ class Filosofo(threading.Thread):
                 print(f"{self.nombre} le quedan {self.plato - i - 1} porciones")
                 time.sleep(random.randint(1, 3))
             self.tenedor_der.liberar()
+            print(f"{self.nombre} dejo el tenedor derecho disponible")
             self.tenedor_izq.liberar()
+            print(f"{self.nombre} dejo el tenedor izquiero disponible")
             self.terminado = True
             print(f"{self.nombre} ha terminado de comer")
 
         else:
             if tenedor_izq_disp:
                 self.tenedor_izq.liberar()
+                print(f"{self.nombre} dejo el tenedor izquiero disponible")
             if tenedor_der_disp:
                 self.tenedor_der.liberar()
+                print(f"{self.nombre} dejo el tenedor derecho disponible")
             print(f"{self.nombre} no puede comer")
 
     def run(self):
@@ -59,12 +63,16 @@ class Filosofo(threading.Thread):
 
 if __name__ == "__main__":
     n = int(input("Ingrese la cantidad de filósofos: "))
-    plato = int(input("Ingrese la cantidad de porciones: "))
-    tenedores = [Tenedor() for i in range(n)]
-    filosofos = []
-    for i in range(n):
-        #plato = random.randint(1, 10)
-        filosofo = Filosofo(f"Filósofo {i+1}", tenedores[i], tenedores[(i+1)%n], plato)
-        filosofos.append(filosofo)
-    for filosofo in filosofos:
-        filosofo.start()
+    plato = random.randint(2, 8)
+    if n >= 1 and n <= 10:
+        print(f"Cada filosofo tiene {plato} porciones para comer")
+        tenedores = [Tenedor() for i in range(n)]
+        filosofos = []
+        for i in range(n):
+            #plato = random.randint(1, 10)
+            filosofo = Filosofo(f"Filósofo {i+1}", tenedores[i], tenedores[(i+1)%n], plato)
+            filosofos.append(filosofo)
+        for filosofo in filosofos:
+            filosofo.start()
+    else:
+        print("Solo puede ingresar de 1 a 10 filosofos")
